@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Pocket Ledger: a personal expense tracker with weekly and monthly reports, categories and multiple currencies.">
+<title>Pocket Ledger Expense Tracker</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💸%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('spendly_dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen">
+
+<header class="border-b" style="border-color:var(--line)">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3">
+    <h1 class="mr-auto text-xl font-extrabold">Pocket Ledger</h1>
+    <input id="month" type="month" class="field" aria-label="Month">
+    <select id="base" class="field" aria-label="Base currency"></select>
+    <button id="btn-export" class="ghost" title="Download all expenses as CSV">Export CSV</button>
+    <button id="btn-settings" class="ghost" title="Budget and exchange rates">Settings</button>
+    <button id="btn-dark" class="ghost" aria-label="Toggle dark mode">Theme</button>
+  </div>
+</header>
+
+<main class="mx-auto max-w-6xl space-y-5 px-4 py-5">
+
+  <!-- Overview -->
+  <section class="panel rounded-2xl p-5 text-white" aria-label="Overview">
+    <div class="grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-4">
+      <div>
+        <label for="salary" class="text-sm opacity-70">Salary this month (<span id="sal-cur"></span>)</label>
+        <input id="salary" type="number" min="0" step="any" class="sal" placeholder="Enter salary">
+      </div>
+      <div><p class="text-sm opacity-70">Spent</p><p id="c-spent" class="big"></p></div>
+      <div><p class="text-sm opacity-70">Left from salary</p><p id="c-save" class="big"></p><p id="c-rate" class="text-xs opacity-70"></p></div>
+      <div><p class="text-sm opacity-70">Most spent on</p><p id="c-top" class="big"></p><p id="c-topv" class="text-xs opacity-70"></p></div>
+    </div>
+    <div class="mt-5">
+      <div class="flex justify-between text-sm"><span id="bud-txt"></span><span id="bud-pct" class="font-semibold"></span></div>
+      <div class="mt-2 h-2.5 rounded-full" style="background:rgba(255,255,255,.18)"><div id="bud-bar" class="bar h-full w-0 rounded-full"></div></div>
+    </div>
+  </section>
+
+  <div class="grid gap-5 lg:grid-cols-5">
+
+    <!-- Add / edit expense -->
+    <section class="card lg:col-span-2">
+      <h2 id="form-title" class="mb-3 text-lg font-bold">Add expense</h2>
+      <form id="form" class="space-y-3">
+        <div class="grid grid-cols-3 gap-2">
+          <input id="amount" type="number" min="0.01" step="any" required placeholder="Amount" aria-label="Amount" class="field col-span-2">
+          <select id="cur" class="field" aria-label="Currency"></select>
+        </div>
+        <select id="cat" class="field w-full" aria-label="Category"></select>
+        <input id="date" type="date" required class="field w-full" aria-label="Date">
+        <div>
+          <label id="note-lbl" for="note" class="lbl">Note (optional)</label>
+          <input id="note" type="text" maxlength="80" class="field mt-1 w-full">
+        </div>
+        <div class="flex gap-2">
+          <button id="save-btn" class="btn flex-1">Add expense</button>
+          <button id="cancel" type="button" class="ghost hidden">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Reports -->
+    <section class="card lg:col-span-3">
+      <div class="mb-4 flex gap-2">
+        <button data-tab="month" class="tab on">Monthly report</button>
+        <button data-tab="week" class="tab">Weekly report</button>
+      </div>
+
+      <div id="tab-month">
+        <div class="flex flex-wrap items-center gap-5">
+          <div id="donut" class="donut"><div class="hole"><div><p class="text-xs muted">Total</p><p id="d-total" class="text-[11px] font-bold"></p></div></div></div>
+          <div id="cat-list" class="min-w-[12rem] flex-1 space-y-3"></div>
+        </div>
+        <p id="m-avg" class="mt-4 text-sm muted"></p>
+      </div>
+
+      <div id="tab-week" class="hidden">
+        <div class="mb-3 flex items-center justify-between">
+          <button id="w-prev" class="ghost" aria-label="Previous week">Prev</button>
+          <b id="w-label" class="text-sm"></b>
+          <button id="w-next" class="ghost" aria-label="Next week">Next</button>
+        </div>
+        <div id="w-bars" class="flex h-40 items-end gap-2"></div>
+        <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+          <div><p class="lbl">Week total</p><p id="w-total" class="font-bold"></p></div>
+          <div><p class="lbl">Daily average</p><p id="w-avg" class="font-bold"></p></div>
+          <div><p class="lbl">Top category</p><p id="w-top" class="text-sm font-bold"></p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Transactions -->
+  <section id="list-card" class="card">
+    <div class="mb-2 flex flex-wrap items-center gap-2">
+      <h2 class="mr-auto text-lg font-bold">Expenses this month</h2>
+      <select id="f-cat" class="field" aria-label="Filter by category"></select>
+      <input id="f-q" type="search" placeholder="Search notes" class="field" aria-label="Search notes">
+    </div>
+    <ul id="list"></ul>
+  </section>
+</main>
+
+<!-- Settings -->
+<dialog id="settings" class="card">
+  <div class="space-y-4">
+    <h2 class="text-lg font-bold">Settings</h2>
+    <div>
+      <label for="budget" class="lbl">Monthly budget (<span id="bud-cur"></span>)</label>
+      <input id="budget" type="number" min="0" step="any" class="field mt-1 w-full" placeholder="0 means no budget">
+    </div>
+    <div>
+      <p class="lbl">Exchange rates (units per 1 USD)</p>
+      <div id="rates" class="mt-1 grid grid-cols-3 gap-2"></div>
+      <button id="live" type="button" class="ghost mt-3">Fetch live rates</button>
+      <span id="rate-msg" class="ml-2 text-xs muted"></span>
+    </div>
+    <div class="flex items-center justify-between">
+      <button id="reset" type="button" class="text-sm neg">Delete all data</button>
+      <button id="close" type="button" class="btn">Done</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="script.js"></script>
+</body>
+</html>

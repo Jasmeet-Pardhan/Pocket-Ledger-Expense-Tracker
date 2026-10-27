@@ -1,0 +1,36 @@
+/* Spendly - theme tokens and small components (layout utilities come from Tailwind) */
+:root{--bg:#f2f5f3;--card:#fff;--line:#d9e2de;--ink:#12201f;--pine:#0f3d3e;--gold:#e9a800}
+.dark{--bg:#0c1615;--card:#13211f;--line:#263836;--ink:#e7f0ec;--pine:#1f6b66}
+
+body{background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif}
+
+.panel{background:#0f3d3e}
+.dark .panel{background:#0a2b2c}
+.card{background:var(--card);border:1px solid var(--line);border-radius:.9rem;padding:1.1rem}
+
+.field{display:block;border:1px solid var(--line);border-radius:.6rem;padding:.5rem .7rem;background:var(--card);color:inherit;font-size:.9rem}
+.btn{border-radius:.6rem;padding:.55rem 1rem;font-weight:600;font-size:.9rem;background:var(--pine);color:#fff}
+.btn:hover{filter:brightness(1.25)}
+.ghost{border:1px solid var(--line);border-radius:.6rem;padding:.4rem .7rem;font-size:.9rem}
+.ghost:hover{background:var(--line)}
+.tab{border:1px solid var(--line);border-radius:.6rem;padding:.4rem .9rem;font-size:.85rem;font-weight:600}
+.tab.on{background:var(--pine);border-color:var(--pine);color:#fff}
+.field:focus-visible,.btn:focus-visible,.ghost:focus-visible,.tab:focus-visible,.sal:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.lbl{font-size:.8rem;font-weight:600;opacity:.7}
+.muted{opacity:.65}
+.neg{color:#e5484d}
+.big{font-size:1.5rem;font-weight:700;line-height:1.25}
+.sal{width:100%;background:transparent;border-bottom:1px dashed rgba(255,255,255,.45);font-size:1.5rem;font-weight:700;color:#fff}
+
+.track{background:var(--line);border-radius:9999px}
+.bar{transition:width .4s ease,height .4s ease}
+.donut{width:9rem;height:9rem;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--line)}
+.hole{width:6rem;height:6rem;border-radius:50%;display:grid;place-items:center;text-align:center;background:var(--card)}
+.row{border-top:1px solid var(--line)}
+
+dialog{max-width:30rem;width:92vw;color:inherit}
+dialog::backdrop{background:rgba(5,20,20,.6)}
+
+@media (prefers-reduced-motion:reduce){.bar{transition:none}}
+@media print{header,form,#list-card,dialog{display:none!important}}
